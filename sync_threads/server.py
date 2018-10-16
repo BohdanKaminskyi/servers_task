@@ -28,10 +28,15 @@ class ClientThread(threading.Thread):
                     break
 
                 if command.startswith(AVAILABLE_COMMANDS):
+                    # TODO: split for params
                     res = subprocess.check_output([command])
-                    self.sock.send(res)
+
+                    if not res:
+                        self.sock.send(' '.encode('UTF-8'))  # empty cd
+                    else:
+                        self.sock.send(res)
                 else:
-                    self.sock.send('Command not available')
+                    self.sock.send('Command not available'.encode('UTF-8'))
         except KeyboardInterrupt:
             self.sock.close()
 

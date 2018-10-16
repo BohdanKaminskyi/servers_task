@@ -7,8 +7,8 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # reuse socket
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-sock.connect(('93.77.147.252', PORT))
-
+# sock.connect(('93.77.147.252', PORT)) # uncomment for multi-machine use
+sock.connect(('', PORT))
 
 while True:
     try:
