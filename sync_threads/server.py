@@ -22,11 +22,17 @@ def generate_response_json(status=200, message=''):
     )
 
 
+# TODO class for sending messages
+
+
 class ClientThread(threading.Thread):
     """docstring for ClientThread"""
     def __init__(self, sock):
         super(ClientThread, self).__init__()
         self.sock = sock
+
+    def send(self, data):
+        self.sock.send(data.encode('UTF-8'))
 
     def run(self):
         try:
@@ -42,18 +48,19 @@ class ClientThread(threading.Thread):
                     try:
                         os.chdir(params[0])
                         response = generate_response_json(200, 'OK')
-                    except FileNotFoundError:
-                        # TODO refactor
-                        response = generate_response_json(404, 'No such file or directory:')
+                    except os.FileNotFoundError:
+                        response = generate_response_json(
+                            404,
+                            'No such file or directory:'
+                        )
 
-                    self.sock.send(response.encode('UTF-8'))  # empty cd
+                    self.send(response.encode('UTF-8'))
 
         except KeyboardInterrupt:
             self.sock.close()
 
 
 while True:
-    # accept connection
     client_socket, address = server_sock.accept()
     print('Got connection from {}'.format(address))
 
