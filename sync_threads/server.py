@@ -27,6 +27,7 @@ def generate_response_json(status=200, message=''):
 
 class ClientThread(threading.Thread):
     """docstring for ClientThread"""
+
     def __init__(self, sock):
         super(ClientThread, self).__init__()
         self.sock = sock
@@ -34,6 +35,8 @@ class ClientThread(threading.Thread):
     def send(self, data):
         self.sock.send(data.encode('UTF-8'))
 
+    # TODO keyboard interrupt not closing socket...
+    # TODO refactor, divide into individual functions
     def run(self):
         try:
             while True:
@@ -46,15 +49,16 @@ class ClientThread(threading.Thread):
 
                 if command == 'cd':
                     try:
-                        os.chdir(params[0])
+                        path = params[0] if params else '../..'
+                        os.chdir(path)
                         response = generate_response_json(200, 'OK')
-                    except os.FileNotFoundError:
+                    except FileNotFoundError:
                         response = generate_response_json(
                             404,
                             'No such file or directory:'
                         )
 
-                    self.send(response.encode('UTF-8'))
+                    self.send(response)
 
         except KeyboardInterrupt:
             self.sock.close()
