@@ -1,8 +1,7 @@
 import socket
-import subprocess
+import os
 import threading
-
-AVAILABLE_COMMANDS = ('ls', 'cd')
+import json
 
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -11,6 +10,16 @@ server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server_sock.bind(('', 4445))
 
 server_sock.listen(5)  # ????
+
+
+# TODO Refactor
+def generate_response_json(status=200, message=''):
+    return json.dumps(
+        {
+            'status': status,
+            'message': message
+        }
+    )
 
 
 class ClientThread(threading.Thread):
@@ -22,21 +31,23 @@ class ClientThread(threading.Thread):
     def run(self):
         try:
             while True:
-                command = self.sock.recv(1024).decode('UTF-8').lstrip()
+                command = self.sock.recv(1024).decode('UTF-8').lstrip().split()
+
+                command, params = command[0], command[1:]
 
                 if command == 'quit':
                     break
 
-                if command.startswith(AVAILABLE_COMMANDS):
-                    # TODO: split for params
-                    res = subprocess.check_output([command])
+                if command == 'cd':
+                    try:
+                        os.chdir(params[0])
+                        response = generate_response_json(200, 'OK')
+                    except FileNotFoundError:
+                        # TODO refactor
+                        response = generate_response_json(404, 'No such file or directory:')
 
-                    if not res:
-                        self.sock.send(' '.encode('UTF-8'))  # empty cd
-                    else:
-                        self.sock.send(res)
-                else:
-                    self.sock.send('Command not available'.encode('UTF-8'))
+                    self.sock.send(response.encode('UTF-8'))  # empty cd
+
         except KeyboardInterrupt:
             self.sock.close()
 
