@@ -1,6 +1,7 @@
 import socket
 
 PORT = 4445
+# TODO add logic to handle responses
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
