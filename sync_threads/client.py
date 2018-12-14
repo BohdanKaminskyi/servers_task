@@ -14,9 +14,15 @@ sock.connect(('', PORT))
 while True:
     try:
         message = input('>>>')
+
+        if message.lower() == 'quit':
+            sock.close()
+            break
+
         sock.send(message.encode('UTF-8'))
 
         response = sock.recv(1024)
         print(response.decode('UTF-8'))
     except KeyboardInterrupt:
         sock.close()
+        break

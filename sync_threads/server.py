@@ -1,7 +1,7 @@
 import socket
 import os
 import threading
-import json
+from response_handler import ResponseHandler
 
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -12,17 +12,7 @@ server_sock.bind(('', 4445))
 server_sock.listen(5)  # ????
 
 
-# TODO Refactor
-def generate_response_json(status=200, message=''):
-    return json.dumps(
-        {
-            'status': status,
-            'message': message
-        }
-    )
-
-
-# TODO class for sending messages
+AVAILABLE_COMANDS = ['cd', 'quit']
 
 
 class ClientThread(threading.Thread):
@@ -42,22 +32,40 @@ class ClientThread(threading.Thread):
             while True:
                 command = self.sock.recv(1024).decode('UTF-8').lstrip().split()
 
-                command, params = command[0], command[1:]
+                if not command:
+                    continue
 
-                if command == 'quit':
-                    break
+                command, params = command[0].lower(), command[1:]
 
-                if command == 'cd':
-                    try:
-                        path = params[0] if params else '../..'
-                        os.chdir(path)
-                        response = generate_response_json(200, 'OK')
-                    except FileNotFoundError:
-                        response = generate_response_json(
-                            404,
-                            'No such file or directory:'
-                        )
+                if command in AVAILABLE_COMANDS:
+                    if command == 'quit':
+                        break
 
+                    if command == 'cd':
+                        try:
+                            path = params[0] if params else '../..'
+                            os.chdir(path)
+
+                            response_data = {
+                                'status': 200,
+                                'data': ''
+                            }
+                        except FileNotFoundError:
+                            response_data = {
+                                'status': 404,
+                                'message': 'No such file or directory'
+                            }
+
+                        response = ResponseHandler.encode(response_data)
+                        self.send(response)
+
+                else:
+                    response_data = {
+                        'status': 404,
+                        'message': f'{command}: command not found'
+                    }
+
+                    response = ResponseHandler.encode(response_data)
                     self.send(response)
 
         except KeyboardInterrupt:
