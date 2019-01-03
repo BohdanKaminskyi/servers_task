@@ -1,7 +1,7 @@
 import socket
 import os
 import threading
-from response_handler import ResponseHandler
+from response_handler import Response
 
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -22,8 +22,8 @@ class ClientThread(threading.Thread):
         super(ClientThread, self).__init__()
         self.sock = sock
 
-    def send(self, data):
-        self.sock.send(data.encode('UTF-8'))
+    def send(self, response):
+        self.sock.send(response.encode('UTF-8'))
 
     # TODO keyboard interrupt not closing socket...
     # TODO refactor, divide into individual functions
@@ -39,6 +39,7 @@ class ClientThread(threading.Thread):
 
                 if command in AVAILABLE_COMANDS:
                     if command == 'quit':
+                        self.sock.close()
                         break
 
                     if command == 'cd':
@@ -46,27 +47,15 @@ class ClientThread(threading.Thread):
                             path = params[0] if params else '../..'
                             os.chdir(path)
 
-                            response_data = {
-                                'status': 200,
-                                'data': ''
-                            }
-                        except FileNotFoundError:
-                            response_data = {
-                                'status': 404,
-                                'message': 'No such file or directory'
-                            }
+                            response = Response(status=200, content='')
 
-                        response = ResponseHandler.encode(response_data)
-                        self.send(response)
+                        except FileNotFoundError:
+                            response = Response(status=404, content='No such file or directory')
 
                 else:
-                    response_data = {
-                        'status': 404,
-                        'message': f'{command}: command not found'
-                    }
+                    response = Response(status=404, content=f'{command}: command not found')
 
-                    response = ResponseHandler.encode(response_data)
-                    self.send(response)
+                self.send(response)
 
         except KeyboardInterrupt:
             self.sock.close()

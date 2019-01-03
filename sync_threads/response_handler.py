@@ -1,28 +1,33 @@
 import json
 
 
-class ResponseHandler:
-    """ResponseHandler is used to encode/decode messages."""
+class Response:
+    """
+    Response is used to create and encode/decode messages.
+    """
 
-    @staticmethod
-    def encode(obj: dict):
-        if 200 <= obj['status'] <= 300:
-            return json.dumps(
-                {
-                    'status': obj['status'],
-                    'data': obj['data']
-                }
-            )
-        else:
-            return json.dumps(
-                {
-                    'status': obj['status'],
-                    'error': {
-                        'message': obj['message']
-                    }
-                }
-            )
+    def __init__(self, content='', status=200):
+        self.content = content
+        self.status = status
+
+    def _to_dict(self):
+        """
+        Packs content and status into dict.
+        """
+        return {
+            'content': self.content,
+            'status': self.status
+        }
+
+    def encode(self, encoding):
+        """
+        Encode the response using the codec registered for encoding.
+        """
+        return json.dumps(self._to_dict()).encode(encoding=encoding)
 
     @staticmethod
     def decode(response: str):
-        return json.loads(response)
+        return Response(**json.loads(response))
+
+    def __repr__(self):
+        return f'Response(status={self.status}, content=\'{self.content}\''
