@@ -7,13 +7,18 @@ def ls():
 
 
 def cd(args):
-    """Change the shell working directory"""
+    """Change the shell working directory
+
+    :param args: Arguments to cd command
+    :type args: list
+    :raises FileNotFoundError: In case args parameter is not a valid directory
+    """
     path = args[0] if args else '../..'
     os.chdir(path)
 
 
 def pwd():
-    """Print working directory.
+    """Print working directory
 
     :returns: String representing working directory name
     :rtype: str
