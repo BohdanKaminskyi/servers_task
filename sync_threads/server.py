@@ -31,7 +31,7 @@ class ClientThread(threading.Thread):
         self.sock.send(response.encode('utf-8'))
 
     def receive(self, bufsize=1024):
-        """Receive data from the socket.
+        """Receive data from the socket
 
         :param bufsize: The maximum amount of data to be received at once
         :type bufsize: int
@@ -41,7 +41,7 @@ class ClientThread(threading.Thread):
         return self.sock.recv(bufsize).decode('utf-8')
 
     def run(self):
-        """Handle TODO"""
+        """Handle client commands"""
         try:
             while True:
                 command = self.receive().lstrip().split()

@@ -7,7 +7,7 @@ def ls():
 
 
 def cd(args):
-    """Change the shell working directory."""
+    """Change the shell working directory"""
     path = args[0] if args else '../..'
     os.chdir(path)
 
