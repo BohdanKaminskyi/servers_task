@@ -17,10 +17,12 @@ AVAILABLE_COMANDS = ('cd', 'ls', 'dir', 'quit')
 
 
 class ClientThread(threading.Thread):
-    """docstring for ClientThread"""
+    """
+    Client thread is used to handle individual clients.
+    """
 
     def __init__(self, sock):
-        super(ClientThread, self).__init__()
+        super().__init__()
         self.sock = sock
 
     def send(self, response):
@@ -34,7 +36,7 @@ class ClientThread(threading.Thread):
                 if not command:
                     continue
 
-                command, params = command[0].lower(), command[1:]
+                command, args = command[0].lower(), command[1:]
 
                 if command in AVAILABLE_COMANDS:
                     if command == 'quit':
@@ -43,7 +45,7 @@ class ClientThread(threading.Thread):
 
                     if command == 'cd':
                         try:
-                            commands.cd(params)
+                            commands.cd(args)
                             response = Response(status=200, content='')
 
                         except FileNotFoundError:
