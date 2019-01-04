@@ -1,6 +1,6 @@
 import socket
-import os
 import threading
+import commands
 from response_handler import Response
 
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -12,29 +12,44 @@ server_sock.bind(('', 4445))
 server_sock.listen(5)  # ????
 
 
-AVAILABLE_COMANDS = ['cd', 'ls', 'dir', 'quit']
+AVAILABLE_COMANDS = ('cd', 'ls', 'dir', 'pwd', 'quit')
 
 
 class ClientThread(threading.Thread):
-    """docstring for ClientThread"""
+    """Client thread to handle individual clients"""
 
     def __init__(self, sock):
-        super(ClientThread, self).__init__()
+        super().__init__()
         self.sock = sock
 
     def send(self, response):
+        """Send response to client
+
+        :param response: Response to send to client
+        :type response: response
+        """
         self.sock.send(response.encode('utf-8'))
 
-    # TODO refactor, divide into individual functions
+    def receive(self, bufsize=1024):
+        """Receive data from the socket
+
+        :param bufsize: The maximum amount of data to be received at once
+        :type bufsize: int
+        :returns: String representing received data
+        :rtype: str
+        """
+        return self.sock.recv(bufsize).decode('utf-8')
+
     def run(self):
+        """Handle client commands"""
         try:
             while True:
-                command = self.sock.recv(1024).decode('utf-8').lstrip().split()
+                command = self.receive().lstrip().split()
 
                 if not command:
                     continue
 
-                command, params = command[0].lower(), command[1:]
+                command, args = command[0].lower(), command[1:]
 
                 if command in AVAILABLE_COMANDS:
                     if command == 'quit':
@@ -43,17 +58,19 @@ class ClientThread(threading.Thread):
 
                     if command == 'cd':
                         try:
-                            path = params[0] if params else '../..'
-                            os.chdir(path)
-
+                            commands.cd(args)
                             response = Response(status=200, content='')
 
                         except FileNotFoundError:
                             response = Response(status=404, content='No such file or directory')
 
                     if command in ('ls', 'dir'):
-                        directory_items = os.listdir(os.getcwd())
+                        directory_items = commands.ls()
                         response = Response(status=200, content='\n'.join(directory_items))
+
+                    if command == 'pwd':
+                        working_dir = commands.pwd()
+                        response = Response(status=200, content=working_dir)
 
                 else:
                     response = Response(status=404, content=f'{command}: command not found')
