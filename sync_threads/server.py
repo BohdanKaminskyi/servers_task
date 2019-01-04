@@ -1,5 +1,4 @@
 import socket
-import os
 import threading
 import commands
 from response_handler import Response
@@ -13,7 +12,7 @@ server_sock.bind(('', 4445))
 server_sock.listen(5)  # ????
 
 
-AVAILABLE_COMANDS = ('cd', 'ls', 'dir', 'quit')
+AVAILABLE_COMANDS = ('cd', 'ls', 'dir', 'pwd', 'quit')
 
 
 class ClientThread(threading.Thread):
@@ -68,6 +67,10 @@ class ClientThread(threading.Thread):
                     if command in ('ls', 'dir'):
                         directory_items = commands.ls()
                         response = Response(status=200, content='\n'.join(directory_items))
+
+                    if command == 'pwd':
+                        working_dir = commands.pwd()
+                        response = Response(status=200, content=working_dir)
 
                 else:
                     response = Response(status=404, content=f'{command}: command not found')
