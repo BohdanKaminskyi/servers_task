@@ -12,7 +12,7 @@ class Response:
 
     def _to_dict(self):
         """
-        Packs content and status into dict.
+        Pack content and status into dict.
         """
         return {
             'content': self.content,
@@ -26,8 +26,11 @@ class Response:
         return json.dumps(self._to_dict()).encode(encoding=encoding)
 
     @staticmethod
-    def decode(response: str):
+    def decode(response):
+        """
+        Decode the response from json string.
+        """
         return Response(**json.loads(response))
 
     def __repr__(self):
-        return f'Response(status={self.status}, content=\'{self.content}\''
+        return f'Response(status={self.status}, content={repr(self.content)})'

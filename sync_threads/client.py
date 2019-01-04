@@ -1,4 +1,5 @@
 import socket
+from response_handler import Response
 
 PORT = 4445
 # TODO add logic to handle responses
@@ -19,10 +20,10 @@ while True:
             sock.close()
             break
 
-        sock.send(message.encode('UTF-8'))
+        sock.send(message.encode('utf-8'))
 
         response = sock.recv(1024)
-        print(response.decode('UTF-8'))
+        print(Response.decode(response))
     except KeyboardInterrupt:
         sock.close()
         break

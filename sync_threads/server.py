@@ -12,7 +12,7 @@ server_sock.bind(('', 4445))
 server_sock.listen(5)  # ????
 
 
-AVAILABLE_COMANDS = ['cd', 'quit']
+AVAILABLE_COMANDS = ['cd', 'ls', 'dir', 'quit']
 
 
 class ClientThread(threading.Thread):
@@ -23,14 +23,13 @@ class ClientThread(threading.Thread):
         self.sock = sock
 
     def send(self, response):
-        self.sock.send(response.encode('UTF-8'))
+        self.sock.send(response.encode('utf-8'))
 
-    # TODO keyboard interrupt not closing socket...
     # TODO refactor, divide into individual functions
     def run(self):
         try:
             while True:
-                command = self.sock.recv(1024).decode('UTF-8').lstrip().split()
+                command = self.sock.recv(1024).decode('utf-8').lstrip().split()
 
                 if not command:
                     continue
@@ -51,6 +50,10 @@ class ClientThread(threading.Thread):
 
                         except FileNotFoundError:
                             response = Response(status=404, content='No such file or directory')
+
+                    if command in ('ls', 'dir'):
+                        directory_items = os.listdir(os.getcwd())
+                        response = Response(status=200, content='\n'.join(directory_items))
 
                 else:
                     response = Response(status=404, content=f'{command}: command not found')
