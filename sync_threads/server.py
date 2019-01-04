@@ -17,21 +17,35 @@ AVAILABLE_COMANDS = ('cd', 'ls', 'dir', 'quit')
 
 
 class ClientThread(threading.Thread):
-    """
-    Client thread is used to handle individual clients.
-    """
+    """Client thread to handle individual clients"""
 
     def __init__(self, sock):
         super().__init__()
         self.sock = sock
 
     def send(self, response):
+        """Send response to client
+
+        :param response: Response to send to client
+        :type response: response
+        """
         self.sock.send(response.encode('utf-8'))
 
+    def receive(self, bufsize=1024):
+        """Receive data from the socket.
+
+        :param bufsize: The maximum amount of data to be received at once
+        :type bufsize: int
+        :returns: String representing received data
+        :rtype: str
+        """
+        return self.sock.recv(bufsize).decode('utf-8')
+
     def run(self):
+        """Handle TODO"""
         try:
             while True:
-                command = self.sock.recv(1024).decode('utf-8').lstrip().split()
+                command = self.receive().lstrip().split()
 
                 if not command:
                     continue
