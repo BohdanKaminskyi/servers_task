@@ -1,6 +1,7 @@
 import socket
 import os
 import threading
+import commands
 from response_handler import Response
 
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -12,7 +13,7 @@ server_sock.bind(('', 4445))
 server_sock.listen(5)  # ????
 
 
-AVAILABLE_COMANDS = ['cd', 'ls', 'dir', 'quit']
+AVAILABLE_COMANDS = ('cd', 'ls', 'dir', 'quit')
 
 
 class ClientThread(threading.Thread):
@@ -25,7 +26,6 @@ class ClientThread(threading.Thread):
     def send(self, response):
         self.sock.send(response.encode('utf-8'))
 
-    # TODO refactor, divide into individual functions
     def run(self):
         try:
             while True:
@@ -43,16 +43,14 @@ class ClientThread(threading.Thread):
 
                     if command == 'cd':
                         try:
-                            path = params[0] if params else '../..'
-                            os.chdir(path)
-
+                            commands.cd(params)
                             response = Response(status=200, content='')
 
                         except FileNotFoundError:
                             response = Response(status=404, content='No such file or directory')
 
                     if command in ('ls', 'dir'):
-                        directory_items = os.listdir(os.getcwd())
+                        directory_items = commands.ls()
                         response = Response(status=200, content='\n'.join(directory_items))
 
                 else:
