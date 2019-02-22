@@ -1,24 +1,28 @@
 import os
 
-commands = {}
+
+class Commands:
+    commands = {}
+
+    @classmethod
+    def register(cls, command_func):
+        cls.commands[command_func.__name__] = command_func
+        return command_func
+
+    @classmethod
+    def execute(cls, *argv, command, args):
+        command_func = cls.commands.get(command, KeyError(f'unknown command: {command}'))
+        return command_func(args)
 
 
-def register_command(command_func):
-    commands[command_func.__name__] = command_func
-
-    def wrapper(*args, **kwargs):
-        return command_func(*args, **kwargs)
-    return wrapper
-
-
-@register_command
-def ls():
+@Commands.register
+def ls(*args):
     """List directory contents"""
     return os.listdir(os.getcwd())
 
 
-@register_command
-def cd(args):
+@Commands.register
+def cd(*args):
     """Change the shell working directory
 
     :param args: Arguments to cd command
@@ -29,8 +33,8 @@ def cd(args):
     os.chdir(path)
 
 
-@register_command
-def pwd():
+@Commands.register
+def pwd(*args):
     """Print working directory
 
     :returns: String representing working directory name

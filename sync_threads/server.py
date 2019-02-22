@@ -1,6 +1,6 @@
 import socket
 import threading
-import commands
+from commands import Commands
 from response_handler import Response
 
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -56,21 +56,24 @@ class ClientThread(threading.Thread):
                         self.sock.close()
                         break
 
-                    if command == 'cd':
-                        try:
-                            commands.cd(args)
-                            response = Response(status=200, content='')
+                    command_result = Commands.execute(command=command, args=args)
+                    response = Response(status=200, content=command_result)
 
-                        except FileNotFoundError:
-                            response = Response(status=404, content='No such file or directory')
+                    # if command == 'cd':
+                    #     try:
+                    #         commands.cd(args)
+                    #         response = Response(status=200, content='')
 
-                    if command in ('ls', 'dir'):
-                        directory_items = commands.ls()
-                        response = Response(status=200, content='\n'.join(directory_items))
+                    #     except FileNotFoundError:
+                    #         response = Response(status=404, content='No such file or directory')
 
-                    if command == 'pwd':
-                        working_dir = commands.pwd()
-                        response = Response(status=200, content=working_dir)
+                    # if command in ('ls', 'dir'):
+                    #     directory_items = commands.ls()
+                    #     response = Response(status=200, content='\n'.join(directory_items))
+
+                    # if command == 'pwd':
+                    #     working_dir = commands.pwd()
+                    #     response = Response(status=200, content=working_dir)
 
                 else:
                     response = Response(status=404, content=f'{command}: command not found')
