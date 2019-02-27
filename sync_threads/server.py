@@ -42,34 +42,34 @@ class ClientThread(threading.Thread):
 
     def run(self):
         """Handle client commands"""
-        try:
-            while True:
-                command = self.receive().lstrip().split()
+        while True:
+            command = self.receive().lstrip().split()
 
-                if not command:
-                    continue
+            if not command:
+                continue
 
-                command, args = command[0].lower(), command[1:]
+            command, args = command[0].lower(), command[1:]
 
-                if command == 'quit':
-                    self.sock.close()
-                    break
+            if command == 'quit':
+                self.sock.close()
+                break
 
-                try:
-                    command_output = Commands.execute(command=command, args=args)
-                    response = Response(status=200, content=command_output)
-                except CommandNotFoundError:
-                    response = Response(status=404, content=f'{command}: command not found')
+            try:
+                command_output = Commands.execute(command=command, args=args)
+                response = Response(status=200, content=command_output)
+            except CommandNotFoundError:
+                response = Response(status=404, content=f'{command}: command not found')
 
-                self.send(response)
-
-        except KeyboardInterrupt:
-            self.sock.close()
+            self.send(response)
 
 
-while True:
-    client_socket, address = server_sock.accept()
-    print('Got connection from {}'.format(address))
+if __name__ == '__main__':
+    try:
+        while True:
+            client_socket, address = server_sock.accept()
+            print('Got connection from {}'.format(address))
 
-    client = ClientThread(client_socket)
-    client.start()
+            client = ClientThread(client_socket)
+            client.start()
+    except KeyboardInterrupt:
+        pass
