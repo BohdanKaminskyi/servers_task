@@ -1,5 +1,7 @@
 import os
 
+CommandNotFoundError = KeyError  # TODO: add implementation
+
 
 class Commands:
     commands = {}
@@ -10,9 +12,12 @@ class Commands:
         return command_func
 
     @classmethod
-    def execute(cls, *argv, command, args):
-        command_func = cls.commands.get(command, KeyError(f'unknown command: {command}'))
-        return command_func(args)
+    def execute(cls, command, args):
+        try:
+            command_func = cls.commands[command]
+            return command_func(args)
+        except KeyError:
+            raise CommandNotFoundError
 
 
 @Commands.register
