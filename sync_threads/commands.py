@@ -1,12 +1,33 @@
 import os
 
+CommandNotFoundError = KeyError  # TODO: add implementation
 
-def ls():
+
+class Commands:
+    commands = {}
+
+    @classmethod
+    def register(cls, command_func):
+        cls.commands[command_func.__name__] = command_func
+        return command_func
+
+    @classmethod
+    def execute(cls, command, args):
+        try:
+            command_func = cls.commands[command]
+            return command_func(args)
+        except KeyError:
+            raise CommandNotFoundError
+
+
+@Commands.register
+def ls(*args):
     """List directory contents"""
     return os.listdir(os.getcwd())
 
 
-def cd(args):
+@Commands.register
+def cd(*args):
     """Change the shell working directory
 
     :param args: Arguments to cd command
@@ -17,7 +38,8 @@ def cd(args):
     os.chdir(path)
 
 
-def pwd():
+@Commands.register
+def pwd(*args):
     """Print working directory
 
     :returns: String representing working directory name

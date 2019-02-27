@@ -25,5 +25,6 @@ while True:
         response = sock.recv(1024)
         print(Response.decode(response))
     except KeyboardInterrupt:
+        print('GOT IT')
         sock.close()
         break

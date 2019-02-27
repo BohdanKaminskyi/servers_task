@@ -1,6 +1,6 @@
 import socket
 import threading
-import commands
+from commands import Commands, CommandNotFoundError
 from response_handler import Response
 
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -42,48 +42,34 @@ class ClientThread(threading.Thread):
 
     def run(self):
         """Handle client commands"""
-        try:
-            while True:
-                command = self.receive().lstrip().split()
+        while True:
+            command = self.receive().lstrip().split()
 
-                if not command:
-                    continue
+            if not command:
+                continue
 
-                command, args = command[0].lower(), command[1:]
+            command, args = command[0].lower(), command[1:]
 
-                if command in AVAILABLE_COMANDS:
-                    if command == 'quit':
-                        self.sock.close()
-                        break
+            if command == 'quit':
+                self.sock.close()
+                break
 
-                    if command == 'cd':
-                        try:
-                            commands.cd(args)
-                            response = Response(status=200, content='')
+            try:
+                command_output = Commands.execute(command=command, args=args)
+                response = Response(status=200, content=command_output)
+            except CommandNotFoundError:
+                response = Response(status=404, content=f'{command}: command not found')
 
-                        except FileNotFoundError:
-                            response = Response(status=404, content='No such file or directory')
-
-                    if command in ('ls', 'dir'):
-                        directory_items = commands.ls()
-                        response = Response(status=200, content='\n'.join(directory_items))
-
-                    if command == 'pwd':
-                        working_dir = commands.pwd()
-                        response = Response(status=200, content=working_dir)
-
-                else:
-                    response = Response(status=404, content=f'{command}: command not found')
-
-                self.send(response)
-
-        except KeyboardInterrupt:
-            self.sock.close()
+            self.send(response)
 
 
-while True:
-    client_socket, address = server_sock.accept()
-    print('Got connection from {}'.format(address))
+if __name__ == '__main__':
+    try:
+        while True:
+            client_socket, address = server_sock.accept()
+            print('Got connection from {}'.format(address))
 
-    client = ClientThread(client_socket)
-    client.start()
+            client = ClientThread(client_socket)
+            client.start()
+    except KeyboardInterrupt:
+        pass
