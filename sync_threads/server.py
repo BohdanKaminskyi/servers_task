@@ -1,5 +1,7 @@
 import socket
-import threading
+from threading import Thread
+from multiprocessing import Process
+from typing import Type, Union
 from commands import Commands, CommandNotFoundError
 from response_handler import Response
 
@@ -9,18 +11,17 @@ server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 server_sock.bind(('', 4445))
 
-server_sock.listen(5)  # ????
+server_sock.listen(5)
 
 
-AVAILABLE_COMANDS = ('cd', 'ls', 'dir', 'pwd', 'quit')
+class Client:
+    """Handle individual clients"""
 
-
-class ClientThread(threading.Thread):
-    """Client thread to handle individual clients"""
-
-    def __init__(self, sock):
+    def __init__(self, sock, worker: Union[Thread, Process]):
         super().__init__()
         self.sock = sock
+        self.worker = worker
+        self.worker.run = self.run
 
     def send(self, response):
         """Send response to client
@@ -51,6 +52,7 @@ class ClientThread(threading.Thread):
             command, args = command[0].lower(), command[1:]
 
             if command == 'quit':
+                print(f'Client {self.sock.getpeername()} disconnected')
                 self.sock.close()
                 break
 
@@ -62,6 +64,10 @@ class ClientThread(threading.Thread):
 
             self.send(response)
 
+    def start(self):
+        """"""
+        return self.worker.start()
+
 
 if __name__ == '__main__':
     try:
@@ -69,7 +75,9 @@ if __name__ == '__main__':
             client_socket, address = server_sock.accept()
             print('Got connection from {}'.format(address))
 
-            client = ClientThread(client_socket)
+            worker = Thread()
+            client = Client(sock=client_socket, worker=worker)
             client.start()
+
     except KeyboardInterrupt:
         pass
