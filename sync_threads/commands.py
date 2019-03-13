@@ -15,7 +15,7 @@ class Commands:
     def execute(cls, command, args):
         try:
             command_func = cls.commands[command]
-            return command_func(args)
+            return command_func(*args)
         except KeyError:
             raise CommandNotFoundError
 
@@ -35,6 +35,7 @@ def cd(*args):
     :raises FileNotFoundError: In case args parameter is not a valid directory
     """
     path = args[0] if args else '../..'
+    print(path, 'PATH')
     os.chdir(path)
 
 

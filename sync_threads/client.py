@@ -17,6 +17,8 @@ while True:
         message = input('>>>')
 
         if message.lower() == 'quit':
+            message = 'quit'
+            sock.send(message.encode('utf-8'))
             sock.close()
             break
 
@@ -24,6 +26,7 @@ while True:
 
         response = sock.recv(1024)
         print(Response.decode(response))
+
     except KeyboardInterrupt:
         message = 'quit'
         sock.send(message.encode('utf-8'))

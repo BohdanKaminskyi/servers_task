@@ -17,10 +17,11 @@ server_sock.listen(5)
 class Client:
     """Handle individual clients"""
 
-    def __init__(self, sock, concurrency_strategy: Union[Type[Thread], Type[Process]]):
+    def __init__(self, sock, worker: Union[Thread, Process]):
         super().__init__()
         self.sock = sock
-        self.concurrency_strategy = concurrency_strategy
+        self.worker = worker
+        self.worker.run = self.run
 
     def send(self, response):
         """Send response to client
@@ -65,7 +66,7 @@ class Client:
 
     def start(self):
         """"""
-        return self.concurrency_strategy(target=self.run).start()
+        return self.worker.start()
 
 
 if __name__ == '__main__':
@@ -74,7 +75,9 @@ if __name__ == '__main__':
             client_socket, address = server_sock.accept()
             print('Got connection from {}'.format(address))
 
-            client = Client(sock=client_socket, concurrency_strategy=Thread)
+            worker = Thread()
+            client = Client(sock=client_socket, worker=worker)
             client.start()
+
     except KeyboardInterrupt:
         pass
