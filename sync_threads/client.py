@@ -16,6 +16,9 @@ while True:
     try:
         message = input('>>>')
 
+        if not message:
+            continue
+
         if message.lower() == 'quit':
             message = 'quit'
             sock.send(message.encode('utf-8'))

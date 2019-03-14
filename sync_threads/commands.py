@@ -35,7 +35,6 @@ def cd(*args):
     :raises FileNotFoundError: In case args parameter is not a valid directory
     """
     path = args[0] if args else '../..'
-    print(path, 'PATH')
     os.chdir(path)
 
 
