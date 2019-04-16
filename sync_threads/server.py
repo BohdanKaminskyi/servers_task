@@ -30,7 +30,7 @@ class Client:
             raise ClientDisconnectedError
 
         try:
-            command_output = Commands.execute(command=command, args=args)
+            command_output = Commands.execute(command=command, *args)
             response = Response(status=200, content=command_output)
         except CommandNotFoundError:
             response = Response(status=404, content=f'{command}: command not found')

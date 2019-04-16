@@ -12,7 +12,7 @@ class Commands:
         return command_func
 
     @classmethod
-    def execute(cls, command, args):
+    def execute(cls, command, *args):
         try:
             command_func = cls.commands[command]
             return command_func(*args)
