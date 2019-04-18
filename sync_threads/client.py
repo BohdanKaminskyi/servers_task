@@ -14,21 +14,6 @@ sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.connect(('', PORT))
 
 
-class CommandsHistory:
-    def __init__(self):
-        self._history = []
-
-    def show_history(self):
-        return self._history
-
-    def append(self, command: str):
-        self._history.append(command)
-
-
-@Commands.register
-def history(s):
-    return s.show_history()
-
 if __name__ == "__main__":
     command_history = CommandsHistory()
 

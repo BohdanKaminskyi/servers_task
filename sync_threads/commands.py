@@ -20,6 +20,28 @@ class Commands:
             raise CommandNotFoundError
 
 
+class CommandsHistory:
+    def __init__(self):
+        self._history = []
+
+    def show_history(self):
+        return self._history
+
+    def append(self, command: str):
+        self._history.append(command)
+
+
+class HistoryViewer:
+    
+
+
+class CommandHandler:
+    def __init__(self, current_path:str, history: CommandsHistory):
+        self._current_path = current_path
+        self._history = history
+
+
+
 @Commands.register
 def ls(*args):
     """List directory contents"""
