@@ -32,7 +32,7 @@ class CommandsHistory:
 
 
 class HistoryViewer:
-    
+    pass
 
 
 class CommandHandler:
