@@ -1,7 +1,8 @@
 import sys
 import socket
-from commands import Commands, CommandNotFoundError
+from commands import Commands, CommandNotFoundError, HistoryViewer
 from response_handler import Response
+from queue import Queue
 
 
 class ClientDisconnectedError(Exception):
@@ -22,7 +23,7 @@ class Client:
             raise ClientDisconnectedError
 
         try:
-            command_output = Commands.execute(command=command, *args)
+            command_output = Commands.execute(command, args)
             response = Response(status=200, content=command_output)
         except CommandNotFoundError:
             response = Response(status=404, content=f'{command}: command not found')
@@ -31,18 +32,19 @@ class Client:
 
 
 class ClientSession:
-    def __init__(self, sock: socket.socket):
+    def __init__(self, sock: socket.socket, history_size: int = 100):
         self.sock = sock
+        self._commands_history = Queue(maxsize=history_size)
 
-    def send(self, data: str, encoding: str='utf-8'):
+    def send(self, data: str, encoding: str = 'utf-8'):
         """Send data over the socket
 
         :param data: Response to send to client
         :type data: str
-
         :param encoding: Data encoding
         :type encoding: str
         """
+        self._commands_history.put(data)
         self.sock.send(data.encode(encoding))
  
     def receive(self, bufsize: int = 1024):
@@ -55,6 +57,10 @@ class ClientSession:
         """
         response_string = self.sock.recv(bufsize).decode('utf-8')
         return Response.decode(response_string)
+
+    def history(self, last_items=0):
+        history_items = list(self._commands_history.queue)
+        return history_items[-last_items:]
 
     def loop(self):
         """Handle client sending, receiving data"""
@@ -72,7 +78,7 @@ class ClientSession:
                     break
 
                 if message.lower().startswith('history'):
-                    # print('\n'.join(map(lambda command: '   ' + command, Commands.execute('history', command_history))))
+                    print(HistoryViewer(self.history()).as_strings)
                     continue
 
                 self.send(message)
@@ -98,7 +104,5 @@ if __name__ == "__main__":
     # sock.connect(('93.77.147.252', PORT)) # uncomment for multi-machine use
     sock.connect(('', PORT))
 
-
     client_session = ClientSession(sock)
     client_session.loop()
-

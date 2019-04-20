@@ -1,4 +1,6 @@
 import os
+from typing import Sequence
+
 
 CommandNotFoundError = KeyError  # TODO: add implementation
 
@@ -20,26 +22,18 @@ class Commands:
             raise CommandNotFoundError
 
 
-class CommandsHistory:
-    def __init__(self):
-        self._history = []
-
-    def show_history(self):
-        return self._history
-
-    def append(self, command: str):
-        self._history.append(command)
-
-
 class HistoryViewer:
-    pass
-
-
-class CommandHandler:
-    def __init__(self, current_path:str, history: CommandsHistory):
-        self._current_path = current_path
+    def __init__(self, history: Sequence[str]):
         self._history = history
 
+    @property
+    def as_strings(self):
+        return '\n'.join(
+            map(
+                lambda command: '   ' + command,
+                enumerate(self._history)
+                )
+            )
 
 
 @Commands.register
