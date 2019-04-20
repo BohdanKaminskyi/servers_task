@@ -1,9 +1,10 @@
 import socket
 from threading import Thread
 from multiprocessing import Process
-from typing import Type, Union
+from typing import Union
 from commands import Commands, CommandNotFoundError
 from response_handler import Response
+from client import Client, ClientDisconnectedError
 
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -14,24 +15,21 @@ server_sock.bind(('', 4445))
 server_sock.listen(5)
 
 
-class Client:
-    """Handle individual clients"""
-
-    def __init__(self, sock, worker: Union[Thread, Process]):
-        super().__init__()
+class ServerSession:
+    def __init__(self, sock: socket.socket, worker: Union[Thread, Process]):
         self.sock = sock
         self.worker = worker
-        self.worker.run = self.run
+        self.worker.run = self.loop
 
-    def send(self, response):
+    def send(self, response: Response):
         """Send response to client
 
         :param response: Response to send to client
-        :type response: response
+        :type response: Response
         """
         self.sock.send(response.encode('utf-8'))
-
-    def receive(self, bufsize=1024):
+ 
+    def receive(self, bufsize: int = 1024):
         """Receive data from the socket
 
         :param bufsize: The maximum amount of data to be received at once
@@ -41,27 +39,12 @@ class Client:
         """
         return self.sock.recv(bufsize).decode('utf-8')
 
-    def run(self):
+    def loop(self):
         """Handle client commands"""
         while True:
             command = self.receive().lstrip().split()
 
-            if not command:
-                continue
-
-            command, args = command[0].lower(), command[1:]
-
-            if command == 'quit':
-                print(f'Client {self.sock.getpeername()} disconnected')
-                self.sock.close()
-                break
-
-            try:
-                command_output = Commands.execute(command=command, args=args)
-                response = Response(status=200, content=command_output)
-            except CommandNotFoundError:
-                response = Response(status=404, content=f'{command}: command not found')
-
+            response = Client.process_command(command)
             self.send(response)
 
     def start(self):
@@ -73,11 +56,15 @@ if __name__ == '__main__':
     try:
         while True:
             client_socket, address = server_sock.accept()
-            print('Got connection from {}'.format(address))
+            print(f'Got connection from {address}')
 
             worker = Thread()
-            client = Client(sock=client_socket, worker=worker)
-            client.start()
+            server_session = ServerSession(sock=client_socket, worker=worker)
+
+            try:
+                server_session.start()
+            except ClientDisconnectedError:
+                print(f'Connection to {address} is lost...')
 
     except KeyboardInterrupt:
         pass

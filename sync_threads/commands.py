@@ -1,4 +1,6 @@
 import os
+from typing import Sequence
+
 
 CommandNotFoundError = KeyError  # TODO: add implementation
 
@@ -12,12 +14,26 @@ class Commands:
         return command_func
 
     @classmethod
-    def execute(cls, command, args):
+    def execute(cls, command, *args):
         try:
             command_func = cls.commands[command]
             return command_func(*args)
         except KeyError:
             raise CommandNotFoundError
+
+
+class HistoryViewer:
+    def __init__(self, history: Sequence[str]):
+        self._history = history
+
+    @property
+    def as_strings(self):
+        return '\n'.join(
+            map(
+                lambda ind_command: f'{ind_command[0]:>5}  {ind_command[1]}',
+                enumerate(self._history)
+                )
+            )
 
 
 @Commands.register
@@ -35,7 +51,6 @@ def cd(*args):
     :raises FileNotFoundError: In case args parameter is not a valid directory
     """
     path = args[0] if args else '../..'
-    print(path, 'PATH')
     os.chdir(path)
 
 
