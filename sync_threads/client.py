@@ -20,6 +20,18 @@ class CommandBroker:
             listener.update(command)
 
 
+class CommandHistory:
+    def __init__(self, history_size: int = 100):
+        self._history = Queue(maxsize=history_size)
+
+    def update(self, command):
+        self._history.put(command)
+
+    def history(self, last_items=0):
+        history_items = list(self._commands_history.queue)
+        return history_items[-last_items:]
+
+
 class ClientDisconnectedError(Exception):
     pass
 
@@ -79,10 +91,6 @@ class ClientSession:
         """
         response_string = self.sock.recv(bufsize).decode('utf-8')
         return Response.decode(response_string)
-
-    # def history(self, last_items=0):
-    #     history_items = list(self._commands_history.queue)
-    #     return history_items[-last_items:]
 
     def loop(self):
         """Handle client sending, receiving data"""
