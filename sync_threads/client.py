@@ -5,6 +5,21 @@ from response_handler import Response
 from queue import Queue
 
 
+class CommandBroker:
+    def __init__(self):
+        self.__listeners = set()
+
+    def subscribe(self, listener):
+        self.__listeners.add(listener)
+
+    def unsubscribe(self, listener):
+        self.__listeners.remove(listener)
+
+    def notify(self, command):
+        for listener in self.__listeners:
+            listener.update(command)
+
+
 class ClientDisconnectedError(Exception):
     pass
 
@@ -40,7 +55,8 @@ class Client:
 class ClientSession:
     def __init__(self, sock: socket.socket, history_size: int = 100):
         self.sock = sock
-        self._commands_history = Queue(maxsize=history_size)
+        # self._commands_history = Queue(maxsize=history_size)
+        self.__events = CommandBroker()
 
     def send(self, data: str, encoding: str = 'utf-8'):
         """Send data over the socket
@@ -50,9 +66,9 @@ class ClientSession:
         :param encoding: Data encoding
         :type encoding: str
         """
-        self._commands_history.put(data)
+        # self._commands_history.put(data)
         self.sock.send(data.encode(encoding))
- 
+
     def receive(self, bufsize: int = 1024):
         """Receive response from the socket
 
@@ -64,9 +80,9 @@ class ClientSession:
         response_string = self.sock.recv(bufsize).decode('utf-8')
         return Response.decode(response_string)
 
-    def history(self, last_items=0):
-        history_items = list(self._commands_history.queue)
-        return history_items[-last_items:]
+    # def history(self, last_items=0):
+    #     history_items = list(self._commands_history.queue)
+    #     return history_items[-last_items:]
 
     def loop(self):
         """Handle client sending, receiving data"""
@@ -76,6 +92,8 @@ class ClientSession:
 
                 if not message:
                     continue
+
+                self.__events.notify(message)
 
                 if message.lower() == 'quit':
                     message = 'quit'
