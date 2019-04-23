@@ -1,8 +1,9 @@
 import sys
 import socket
-from commands import Commands, CommandNotFoundError, HistoryViewer
+from commands import Commands, CommandNotFoundError
 from response_handler import Response
 from queue import Queue
+from helpers import HistoryViewer
 
 
 class CommandBroker:
