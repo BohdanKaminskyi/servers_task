@@ -97,7 +97,11 @@ if __name__ == "__main__":
                 break
 
             if message.lower().startswith('history'):
-                print(HistoryViewer(history.history_items()).as_strings)
+                print(
+                    HistoryViewer(
+                        history.history_items()
+                    ).as_strings
+                )
                 continue
 
             client_session.send(message)
