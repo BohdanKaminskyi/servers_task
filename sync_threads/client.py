@@ -67,7 +67,6 @@ class Client:
 class ClientSession:
     def __init__(self, sock: socket.socket, history_size: int = 100):
         self.sock = sock
-        # self._commands_history = Queue(maxsize=history_size)
         self.events = CommandBroker()
 
     def send(self, data: str, encoding: str = 'utf-8'):
