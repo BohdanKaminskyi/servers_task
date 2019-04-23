@@ -1,36 +1,13 @@
 import sys
 import socket
-from commands import Commands, CommandNotFoundError
+from commands import (
+    Commands,
+    CommandNotFoundError,
+    CommandBroker,
+    CommandHistory
+)
 from response_handler import Response
-from queue import Queue
 from helpers import HistoryViewer
-
-
-class CommandBroker:
-    def __init__(self):
-        self.__listeners = set()
-
-    def subscribe(self, listener):
-        self.__listeners.add(listener)
-
-    def unsubscribe(self, listener):
-        self.__listeners.remove(listener)
-
-    def notify(self, command):
-        for listener in self.__listeners:
-            listener.update(command)
-
-
-class CommandHistory:
-    def __init__(self, history_size: int = 100):
-        self.history = Queue(maxsize=history_size)
-
-    def update(self, command):
-        self.history.put(command)
-
-    def history_items(self, last_items=0):
-        history_items = list(self.history.queue)
-        return history_items[-last_items:]
 
 
 class ClientDisconnectedError(Exception):
