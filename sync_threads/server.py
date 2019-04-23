@@ -2,7 +2,6 @@ import socket
 from threading import Thread
 from multiprocessing import Process
 from typing import Union
-from commands import Commands, CommandNotFoundError
 from response_handler import Response
 from client import Client, ClientDisconnectedError
 
@@ -28,7 +27,7 @@ class ServerSession:
         :type response: Response
         """
         self.sock.send(response.encode('utf-8'))
- 
+
     def receive(self, bufsize: int = 1024):
         """Receive data from the socket
 
