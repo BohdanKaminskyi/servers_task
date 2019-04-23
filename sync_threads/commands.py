@@ -1,5 +1,5 @@
 import os
-from typing import Sequence
+from queue import Queue
 
 
 CommandNotFoundError = KeyError  # TODO: add implementation
@@ -22,18 +22,31 @@ class Commands:
             raise CommandNotFoundError
 
 
-class HistoryViewer:
-    def __init__(self, history: Sequence[str]):
-        self._history = history
+class CommandBroker:
+    def __init__(self):
+        self.__listeners = set()
 
-    @property
-    def as_strings(self):
-        return '\n'.join(
-            map(
-                lambda ind_command: f'{ind_command[0]:>5}  {ind_command[1]}',
-                enumerate(self._history)
-                )
-            )
+    def subscribe(self, listener):
+        self.__listeners.add(listener)
+
+    def unsubscribe(self, listener):
+        self.__listeners.remove(listener)
+
+    def notify(self, command):
+        for listener in self.__listeners:
+            listener.update(command)
+
+
+class CommandHistory:
+    def __init__(self, history_size: int = 100):
+        self.history = Queue(maxsize=history_size)
+
+    def update(self, command):
+        self.history.put(command)
+
+    def history_items(self, last_items=0):
+        history_items = list(self.history.queue)
+        return history_items[-last_items:]
 
 
 @Commands.register
