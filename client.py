@@ -1,73 +1,8 @@
 import sys
 import socket
-from commands import (
-    Commands,
-    CommandNotFoundError,
-    CommandBroker,
-    CommandHistory
-)
-from response_handler import Response
+from commands import CommandHistory
 from helpers import HistoryViewer
-
-
-class ClientDisconnectedError(Exception):
-    pass
-
-
-class Client:
-    """Handle client commands"""
-
-    @staticmethod
-    def process_command(command) -> Response:
-        if not command:
-            return Response(status=200, content='')
-
-        command, args = command[0].lower(), command[1:]
-
-        if command == 'quit':
-            raise ClientDisconnectedError
-
-        try:
-            command_output = Commands.execute(command, *args)
-            response = Response(
-                status=200,
-                content=command_output
-            )
-        except CommandNotFoundError:
-            response = Response(
-                status=404,
-                content=f'{command}: command not found'
-            )
-
-        return response
-
-
-class ClientSession:
-    def __init__(self, sock: socket.socket, history_size: int = 100):
-        self.sock = sock
-        self.events = CommandBroker()
-
-    def send(self, data: str, encoding: str = 'utf-8'):
-        """Send data over the socket
-
-        :param data: Response to send to client
-        :type data: str
-        :param encoding: Data encoding
-        :type encoding: str
-        """
-        self.events.notify(data)
-        self.sock.send(data.encode(encoding))
-
-    def receive(self, bufsize: int = 1024):
-        """Receive response from the socket
-
-        :param bufsize: The maximum amount of data to be received at once
-        :type bufsize: int
-        :returns: Response object
-        :rtype: Response
-        """
-        response_string = self.sock.recv(bufsize).decode('utf-8')
-        return Response.decode(response_string)
+from sessions import ClientSession
 
 
 if __name__ == "__main__":
@@ -80,7 +15,7 @@ if __name__ == "__main__":
 
     client_session = ClientSession(sock)
 
-    history = CommandHistory()
+    history = CommandHistory(history_size=100)
     client_session.events.subscribe(history)
 
     try:
