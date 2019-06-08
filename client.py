@@ -1,8 +1,8 @@
 import sys
-from commands import CommandHistory
-from helpers import HistoryViewer
-from sessions import ClientSession
-from socket_config import ClientSocket
+from src.commands.commands import CommandHistory
+from src.helpers import HistoryViewer
+from src.sessions import ClientSession
+from src.socket_config import ClientSocket
 
 
 if __name__ == "__main__":

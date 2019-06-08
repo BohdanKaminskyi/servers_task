@@ -1,13 +1,14 @@
-from workers import SyncWorker, ThreadLauncher
-from concurrent.futures import ThreadPoolExecutor
-from socket_config import ServerSocket
+from src.workers import SyncWorker, TaskSubmitter
+from concurrent.futures import ProcessPoolExecutor
+from src.socket_config import ServerSocket
 
 
 if __name__ == '__main__':
     ADDRESS, PORT = '', 4445
     sock = ServerSocket(ADDRESS, PORT)
-    pool = ThreadPoolExecutor(max_workers=5)
-    launcher = ThreadLauncher(pool)
+
+    pool = ProcessPoolExecutor(max_workers=5)
+    launcher = TaskSubmitter(pool)
 
     try:
         while True:

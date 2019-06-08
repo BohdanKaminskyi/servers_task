@@ -1,6 +1,7 @@
 import socket
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from sessions import ServerSession
+from src.sessions import ServerSession
+from typing import Union
 
 
 class Worker:
@@ -19,8 +20,8 @@ class SyncWorker(Worker):
         session.loop()
 
 
-class ThreadLauncher:
-    def __init__(self, pool=ThreadPoolExecutor):
+class TaskSubmitter:
+    def __init__(self, pool: Union[ThreadPoolExecutor, ProcessPoolExecutor]):
         self.pool = pool
 
     def submit(self, worker: SyncWorker):

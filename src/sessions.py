@@ -1,8 +1,8 @@
 import socket
 
-from commands_processor import Client
-from response_handler import Response
-from commands import CommandBroker
+from src.commands.commands_processor import CommandProcessor
+from src.response_handler import Response
+from src.commands.commands import CommandBroker
 
 
 class ClientSession:
@@ -60,5 +60,5 @@ class ServerSession:
         while True:
             command = self.receive().lstrip().split()
 
-            response = Client.process_command(command)
+            response = CommandProcessor.process_command(command)
             self.send(response)

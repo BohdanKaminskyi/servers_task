@@ -1,13 +1,13 @@
-from commands import Commands, CommandNotFoundError
-from response_handler import Response
+from src.commands.commands import Commands, CommandNotFoundError
+from src.response_handler import Response
 
 
 class ClientDisconnectedError(Exception):
     pass
 
 
-class Client:
-    """Handle client commands"""
+class CommandProcessor:
+    """Handle commands"""
 
     @staticmethod
     def process_command(command) -> Response:
