@@ -10,10 +10,11 @@ class Socket:
 
 
 class ServerSocket(Socket):
-    def __init__(self, host='', port=4445):
+    def __init__(self, host='', port=4445, is_blocking: bool = True):
         super().__init__(host, port)
         self.sock.bind((self.host, self.port))
         self.sock.listen(5)
+        self.sock.setblocking(is_blocking)
 
 
 class ClientSocket(Socket):
