@@ -1,3 +1,4 @@
+import asyncio
 import socket
 
 from src.commands.commands_processor import CommandProcessor
@@ -62,3 +63,37 @@ class ServerSession:
 
             response = CommandProcessor.process_command(command)
             self.send(response)
+
+
+class AsyncServerSession:
+    def __init__(self, sock: socket.socket, loop: asyncio.AbstractEventLoop):
+        self.sock = sock
+        self.loop = loop
+
+    async def send(self, response: Response):
+        """Send response to client
+
+        :param response: Response to send to client
+        :type response: Response
+        """
+        await self.loop.sock_sendall(self.sock, response.encode('utf-8'))
+
+    async def receive(self, bufsize: int = 1024):
+        """Receive data from the socket
+
+        :param bufsize: The maximum amount of data to be received at once
+        :type bufsize: int
+        :returns: String representing received data
+        :rtype: str
+        """
+        message = await self.loop.sock_recv(self.sock, bufsize)
+        return message.decode('utf-8')
+
+    async def server_loop(self):
+        """Handle client commands"""
+        while True:
+            command = await self.receive()
+            command = command.lstrip().split()
+
+            response = CommandProcessor.process_command(command)
+            await self.send(response)
