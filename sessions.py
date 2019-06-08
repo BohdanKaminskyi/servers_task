@@ -1,0 +1,64 @@
+import socket
+
+from commands_processor import Client
+from response_handler import Response
+from commands import CommandBroker
+
+
+class ClientSession:
+    def __init__(self, sock: socket.socket):
+        self.sock = sock
+        self.events = CommandBroker()
+
+    def send(self, data: str, encoding: str = 'utf-8'):
+        """Send data over the socket
+
+        :param data: Response to send to client
+        :type data: str
+        :param encoding: Data encoding
+        :type encoding: str
+        """
+        self.events.notify(data)
+        self.sock.send(data.encode(encoding))
+
+    def receive(self, bufsize: int = 1024):
+        """Receive response from the socket
+
+        :param bufsize: The maximum amount of data to be received at once
+        :type bufsize: int
+        :returns: Response object
+        :rtype: Response
+        """
+        response_string = self.sock.recv(bufsize).decode('utf-8')
+        return Response.decode(response_string)
+
+
+class ServerSession:
+    def __init__(self, sock: socket.socket):
+        self.sock = sock
+
+    def send(self, response: Response):
+        """Send response to client
+
+        :param response: Response to send to client
+        :type response: Response
+        """
+        self.sock.send(response.encode('utf-8'))
+
+    def receive(self, bufsize: int = 1024):
+        """Receive data from the socket
+
+        :param bufsize: The maximum amount of data to be received at once
+        :type bufsize: int
+        :returns: String representing received data
+        :rtype: str
+        """
+        return self.sock.recv(bufsize).decode('utf-8')
+
+    def loop(self):
+        """Handle client commands"""
+        while True:
+            command = self.receive().lstrip().split()
+
+            response = Client.process_command(command)
+            self.send(response)
