@@ -1,19 +1,14 @@
 import sys
-import socket
 from commands import CommandHistory
 from helpers import HistoryViewer
 from sessions import ClientSession
+from socket_config import ClientSocket
 
 
 if __name__ == "__main__":
-    PORT = 4445
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # reuse socket
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    # sock.connect(('93.77.147.252', PORT)) # uncomment for multi-machine use
-    sock.connect(('', PORT))
-
-    client_session = ClientSession(sock)
+    ADDRESS, PORT = '', 4445
+    sock = ClientSocket(ADDRESS, PORT)
+    client_session = ClientSession(sock.sock)
 
     history = CommandHistory(history_size=100)
     client_session.events.subscribe(history)
