@@ -56,7 +56,7 @@ class ServerSession:
         """
         return self.sock.recv(bufsize).decode('utf-8')
 
-    def loop(self):
+    def server_loop(self):
         """Handle client commands"""
         while True:
             command = self.receive().lstrip().split()
@@ -66,9 +66,9 @@ class ServerSession:
 
 
 class AsyncServerSession:
-    def __init__(self, sock: socket.socket, loop: asyncio.AbstractEventLoop):
+    def __init__(self, sock: socket.socket):
         self.sock = sock
-        self.loop = loop
+        self.loop = asyncio.get_running_loop()
 
     async def send(self, response: Response):
         """Send response to client

@@ -1,8 +1,8 @@
 import argparse
 import asyncio
 
-from src.sessions import AsyncServerSession
-from src.workers import SyncWorker, TaskSubmitter
+from src.sessions import ServerSession, AsyncServerSession
+from src.workers import SyncWorker, AsyncWorker, TaskManager
 from concurrent.futures import ProcessPoolExecutor
 from src.socket_config import ServerSocket
 
@@ -15,14 +15,20 @@ parser.add_argument('--serve_async', action="store_true", default=False)
 ADDRESS, PORT = '', 4445
 
 
-async def run_server_async(loop: asyncio.AbstractEventLoop):
+async def run_server_async():
+    loop = asyncio.get_running_loop()
     sock = ServerSocket(ADDRESS, PORT, is_blocking=False)
+
+    launcher = TaskManager(loop)
 
     try:
         while True:
             client_socket, address = await loop.sock_accept(sock.sock)
             print(f'Got connection from {address}')
-            loop.create_task(AsyncServerSession(client_socket, loop).server_loop())
+
+            worker = AsyncWorker(AsyncServerSession(client_socket))
+            launcher.submit(worker)
+
     except KeyboardInterrupt:
         pass
 
@@ -30,14 +36,14 @@ async def run_server_async(loop: asyncio.AbstractEventLoop):
 def run_server_sync():
     sock = ServerSocket(ADDRESS, PORT)
     pool = ProcessPoolExecutor(max_workers=5)
-    launcher = TaskSubmitter(pool)
+    launcher = TaskManager(pool)
 
     try:
         while True:
             client_socket, address = sock.sock.accept()
             print(f'Got connection from {address}')
 
-            worker = SyncWorker(client_socket)
+            worker = SyncWorker(ServerSession(client_socket))
             launcher.submit(worker)
 
     except KeyboardInterrupt:
@@ -50,7 +56,7 @@ if __name__ == '__main__':
     if args.serve_async:
         print('Running async...')
         loop = asyncio.get_event_loop()
-        loop.create_task(run_server_async(loop))
+        loop.create_task(run_server_async())
         loop.run_forever()
 
     else:

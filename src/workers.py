@@ -1,28 +1,33 @@
-import socket
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from src.sessions import ServerSession
+from src.sessions import ServerSession, AsyncServerSession
+import asyncio
 from typing import Union
 
 
 class Worker:
-    def __init__(self):
-        # raise NotImplemented
-        pass
+    def __init__(self, session: Union[ServerSession, AsyncServerSession]):
+        self.session = session
+
+    def start(self):
+        raise NotImplemented
 
 
 class SyncWorker(Worker):
-    def __init__(self, sock: socket.socket):
-        super().__init__()
-        self.sock = sock
-
     def start(self):
-        session = ServerSession(self.sock)
-        session.loop()
+        self.session.server_loop()
 
 
-class TaskSubmitter:
-    def __init__(self, pool: Union[ThreadPoolExecutor, ProcessPoolExecutor]):
-        self.pool = pool
+class AsyncWorker(Worker):
+    async def start(self):
+        await self.session.server_loop()
 
-    def submit(self, worker: SyncWorker):
-        self.pool.submit(worker.start)
+
+class TaskManager:
+    def __init__(self, strategy_obj: Union[ThreadPoolExecutor, ProcessPoolExecutor, asyncio.AbstractEventLoop]):
+        self.strategy_obj = strategy_obj
+        self.is_async = isinstance(self.strategy_obj, asyncio.AbstractEventLoop)
+
+        if self.is_async:
+            self.submit = lambda worker: self.strategy_obj.create_task(worker.start())
+        else:
+            self.submit = lambda worker: self.strategy_obj.submit(worker.start)
