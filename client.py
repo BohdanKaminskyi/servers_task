@@ -6,6 +6,13 @@ from src.socket_config import ClientSocket
 
 
 if __name__ == "__main__":
+    # let's keep it stupid for now: checking <admin:password> before we go
+    username = 'admin'
+    password = 'password'
+    
+    if username != 'admin' or password !='password':
+        sys.exit()
+
     ADDRESS, PORT = '', 4445
     sock = ClientSocket(ADDRESS, PORT)
     client_session = ClientSession(sock.sock)
@@ -34,6 +41,10 @@ if __name__ == "__main__":
                 )
                 continue
 
+            # TODO need to identify myself and send some ID to server...
+            # 1. we can try identifying by ip+port but then session will be broken in case same user wants to login from another pc..
+            # 2. we can add user credentials <login:password> and based on that data identify user and latest command he used or pwd
+            # after that we can add tokens etc.
             client_session.send(message)
 
             response = client_session.receive()

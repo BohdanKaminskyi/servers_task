@@ -5,6 +5,8 @@ from src.sessions import ServerSession, AsyncServerSession
 from src.workers import SyncWorker, AsyncWorker, TaskManager
 from concurrent.futures import ProcessPoolExecutor
 from src.socket_config import ServerSocket
+from dbalchemy import Session
+from dbalchemy.models import User
 
 
 parser = argparse.ArgumentParser(description='TCP server for handling basic unix commands')
@@ -52,13 +54,17 @@ def run_server_sync():
 
 if __name__ == '__main__':
     args = parser.parse_args()
+    session = Session()
 
-    if args.serve_async:
-        print('Running async...')
-        loop = asyncio.get_event_loop()
-        loop.create_task(run_server_async())
-        loop.run_forever()
+    print(session.query(User).all())
 
-    else:
-        print('Running sync...')
-        run_server_sync()
+    #
+    # if args.serve_async:
+    #     print('Running async...')
+    #     loop = asyncio.get_event_loop()
+    #     loop.create_task(run_server_async())
+    #     loop.run_forever()
+    #
+    # else:
+    #     print('Running sync...')
+    #     run_server_sync()
