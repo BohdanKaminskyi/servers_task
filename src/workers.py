@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from src.sessions import ServerSession, AsyncServerSession
+from src.sessions.sessions import ServerSession, AsyncServerSession
 import asyncio
 from typing import Union
 

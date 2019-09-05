@@ -6,8 +6,7 @@ class Response:
 
     Create and encode/decode messages"""
 
-    def __init__(self, user_id='', content='', status=200):
-        self.user_id = user_id
+    def __init__(self, content='', status=200):
         self.content = content
         self.status = status
 
@@ -18,12 +17,11 @@ class Response:
         :rtype: dict
         """
         return {
-            'user_id': self.user_id,
             'content': self.content,
             'status': self.status
         }
 
-    def encode(self, encoding: str) -> str:
+    def encode(self, encoding: str = 'utf8') -> str:
         """Encode the response using the codec registered for encoding
 
         :param encoding: Encoding to be used
@@ -45,4 +43,4 @@ class Response:
         return Response(**json.loads(response))
 
     def __repr__(self):
-        return f'Response(status={self.status}, content={repr(self.content)}, user_id={self.user_id})'
+        return f'Response(status={self.status}, content={repr(self.content)})'

@@ -14,3 +14,14 @@ class MessageManager(metaclass=Singleton):
         self.serializer = serializer
         self.executor = executor
         self.protocol = protocol
+
+    def get_request(self, message):
+        return self.serializer.deserialize(message)
+
+    def validate_header(self, message):
+        request = self.get_request(message)
+        headers = request.headers
+
+        if not headers.get('Auth'):
+            return False
+        return True

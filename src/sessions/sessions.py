@@ -5,6 +5,8 @@ import socket
 from src.commands.commands_processor import CommandProcessor
 from src.requests.response_handler import Response
 from src.commands.commands import CommandBroker
+from src.manager import MessageManager
+from src.requests.serializers import RequestJSONSerializer
 
 
 class ClientSession:
@@ -64,9 +66,12 @@ class ServerSession:
 
     def server_loop(self):
         """Handle client commands"""
+        manager = MessageManager(serializer=RequestJSONSerializer,
+                                 executor='',
+                                 protocol='')
         while True:
-            message = self.receive().decode('utf-8')  #.lstrip().split()
 
+            message = self.receive().decode('utf-8')  #.lstrip().split()
             # 1. check header
             # 2. deserialize message if header is ok
             # 3. CommandProcessor.process_command(command)
@@ -74,9 +79,15 @@ class ServerSession:
             # 5. send response
             # questions: what if client sends some shit?
 
-
-
-            self.send('Response')
+            # doing duplicate work, as `validate_header` already deserializes full message
+            if manager.validate_header(message):
+                request = manager.get_request(message)
+                print(request)
+                response = Response(content=request, status=200)
+                self.send(response.encode())
+            else:
+                print('Cannot find header `Auth`')
+                self.send('BAD REQUEST')
 
 
 class AsyncServerSession:

@@ -4,6 +4,8 @@ from src.helpers import HistoryViewer
 from src.sessions.sessions import ClientSession
 from src.socket_config import ClientSocket
 import json
+from src.requests.request import Request
+from src.requests.serializers import RequestJSONSerializer
 
 
 if __name__ == "__main__":
@@ -24,6 +26,22 @@ if __name__ == "__main__":
 
     history = CommandHistory(history_size=100)
     client_session.events.subscribe(history)
+
+    data = {
+        'command':'something'
+    }
+
+    headers = {
+        'auth': 'aaa_password_aaa'
+    }
+
+    request = Request(data=data, headers=headers)
+    serialized_request = RequestJSONSerializer.serialize(request)
+
+    client_session.send(serialized_request)
+
+    response = client_session.receive()
+    print(response)
 
     try:
         while True:
@@ -46,10 +64,6 @@ if __name__ == "__main__":
                 )
                 continue
 
-            # TODO need to identify myself and send some ID to server...
-            # 1. we can try identifying by ip+port but then session will be broken in case same user wants to login from another pc..
-            # 2. we can add user credentials <login:password> and based on that data identify user and latest command he used or pwd
-            # after that we can add tokens etc.
             client_session.send(message)
 
             response = client_session.receive()
