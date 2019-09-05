@@ -1,5 +1,5 @@
 from src.commands.commands import Commands, CommandNotFoundError
-from src.response_handler import Response
+from src.requests.response_handler import Response
 
 
 class ClientDisconnectedError(Exception):

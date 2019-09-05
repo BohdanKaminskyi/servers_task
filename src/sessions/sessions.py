@@ -50,37 +50,33 @@ class ServerSession:
         """
         self.sock.send(response.encode('utf-8'))
 
-    def receive(self, bufsize: int = 1024):
+    def receive(self, bufsize: int = 1024) -> bytes:
         """Receive data from the socket
 
         :param bufsize: The maximum amount of data to be received at once
         :type bufsize: int
         :returns: String representing received data
-        :rtype: str
+        :rtype: bytes
         """
-        request = self.sock.recv(bufsize).decode('utf-8')
-        print(f'got request: {request}')
-        return request
+        message = self.sock.recv(bufsize)
+        print(f'got message: {message}')
+        return message
 
     def server_loop(self):
         """Handle client commands"""
         while True:
-            request_data = json.loads(self.receive())#.lstrip().split()
+            message = self.receive().decode('utf-8')  #.lstrip().split()
 
-            auth = request_data.get('auth')
-            username = auth.get('username')
-            password = auth.get('password')
-            print(username)
-            #
-            # user = (
-            #     session.query(User)
-            #         .filter(username == username,
-            #                 password == password)
-            #         .first()
-            # )
-            # print(user)
-            # response = CommandProcessor.process_command(command)
-            self.send('good')
+            # 1. check header
+            # 2. deserialize message if header is ok
+            # 3. CommandProcessor.process_command(command)
+            # 4. serialize response
+            # 5. send response
+            # questions: what if client sends some shit?
+
+
+
+            self.send('Response')
 
 
 class AsyncServerSession:
