@@ -89,13 +89,10 @@ class ServerSession:
             # 4. serialize response
             # 5. send response
             # questions: what if client sends some shit?
-
+            print(message)
             if self._validate_header(message):
-                request = self._parse_message(message)
-                print(request)
-                response = Response(data=request, status=200)
+                response = Response(data='Auth present', status=200)
             else:
-                print('Cannot find header `Auth`')
                 response = Response(data='Auth missing', status=400)
 
             self.send(self.response_serializer.serialize(response))

@@ -9,11 +9,6 @@ from src.requests.serializers import RequestJSONSerializer
 
 
 if __name__ == "__main__":
-    # let's keep it stupid for now: checking <admin:password> before we go
-    # username = input("username: ")
-    # password = input("password: ")
-    # then encrypt and send to server
-
     username = 'admin'
     password = 'password'
     
@@ -28,11 +23,11 @@ if __name__ == "__main__":
     client_session.events.subscribe(history)
 
     data = {
-        'command':'something'
+        'command': 'something'
     }
 
     headers = {
-        'auth': 'aaa_password_aaa'
+        'Auth': 'aaa_password_aaa'
     }
 
     request = Request(data=data, headers=headers)
