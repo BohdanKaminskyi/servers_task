@@ -1,8 +1,9 @@
 import asyncio
+import json
 import socket
 
 from src.commands.commands_processor import CommandProcessor
-from src.response_handler import Response
+from src.requests.response_handler import Response
 from src.commands.commands import CommandBroker
 
 
@@ -11,6 +12,7 @@ class ClientSession:
         self.sock = sock
         self.events = CommandBroker()
 
+    # TODO: we need to send requests not strings
     def send(self, data: str, encoding: str = 'utf-8'):
         """Send data over the socket
 
@@ -30,7 +32,9 @@ class ClientSession:
         :returns: Response object
         :rtype: Response
         """
+        print('heheehhehehehhe')
         response_string = self.sock.recv(bufsize).decode('utf-8')
+        print('hehesssss')
         return Response.decode(response_string)
 
 
@@ -54,15 +58,29 @@ class ServerSession:
         :returns: String representing received data
         :rtype: str
         """
-        return self.sock.recv(bufsize).decode('utf-8')
+        request = self.sock.recv(bufsize).decode('utf-8')
+        print(f'got request: {request}')
+        return request
 
     def server_loop(self):
         """Handle client commands"""
         while True:
-            command = self.receive().lstrip().split()
+            request_data = json.loads(self.receive())#.lstrip().split()
 
-            response = CommandProcessor.process_command(command)
-            self.send(response)
+            auth = request_data.get('auth')
+            username = auth.get('username')
+            password = auth.get('password')
+            print(username)
+            #
+            # user = (
+            #     session.query(User)
+            #         .filter(username == username,
+            #                 password == password)
+            #         .first()
+            # )
+            # print(user)
+            # response = CommandProcessor.process_command(command)
+            self.send('good')
 
 
 class AsyncServerSession:

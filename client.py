@@ -1,12 +1,17 @@
 import sys
 from src.commands.commands import CommandHistory
 from src.helpers import HistoryViewer
-from src.sessions import ClientSession
+from src.sessions.sessions import ClientSession
 from src.socket_config import ClientSocket
+import json
 
 
 if __name__ == "__main__":
     # let's keep it stupid for now: checking <admin:password> before we go
+    # username = input("username: ")
+    # password = input("password: ")
+    # then encrypt and send to server
+
     username = 'admin'
     password = 'password'
     
