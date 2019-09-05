@@ -1,12 +1,10 @@
 import asyncio
-import json
 import socket
 
 from src.commands.commands_processor import CommandProcessor
-from src.requests.response_handler import Response
+from src.requests.response import Response
 from src.commands.commands import CommandBroker
-from src.manager import MessageManager
-from src.requests.serializers import RequestJSONSerializer
+from src.requests.serializers import RequestJSONSerializer, ResponseJSONSerializer
 
 
 class ClientSession:
@@ -34,23 +32,28 @@ class ClientSession:
         :returns: Response object
         :rtype: Response
         """
-        print('heheehhehehehhe')
         response_string = self.sock.recv(bufsize).decode('utf-8')
-        print('hehesssss')
-        return Response.decode(response_string)
+        return ResponseJSONSerializer.deserialize(response_string)
 
 
 class ServerSession:
-    def __init__(self, sock: socket.socket):
+    def __init__(self,
+                 sock: socket.socket,
+                 request_serializer=RequestJSONSerializer,
+                 response_serializer=ResponseJSONSerializer,
+                 executor=CommandProcessor):
         self.sock = sock
+        self.request_serializer = request_serializer
+        self.response_serializer = response_serializer
+        self.executor = executor
 
-    def send(self, response: Response):
+    def send(self, data: str):
         """Send response to client
 
-        :param response: Response to send to client
-        :type response: Response
+        :param data: Response to send to client
+        :type data: str
         """
-        self.sock.send(response.encode('utf-8'))
+        self.sock.send(data.encode('utf-8'))
 
     def receive(self, bufsize: int = 1024) -> bytes:
         """Receive data from the socket
@@ -64,11 +67,19 @@ class ServerSession:
         print(f'got message: {message}')
         return message
 
+    def _parse_message(self, message: bytes):
+        return self.request_serializer.deserialize(message)
+
+    def _validate_header(self, message):
+        request = self._parse_message(message)
+        headers = request.headers
+
+        if not headers.get('Auth'):
+            return False
+        return True
+
     def server_loop(self):
         """Handle client commands"""
-        manager = MessageManager(serializer=RequestJSONSerializer,
-                                 executor='',
-                                 protocol='')
         while True:
 
             message = self.receive().decode('utf-8')  #.lstrip().split()
@@ -79,15 +90,15 @@ class ServerSession:
             # 5. send response
             # questions: what if client sends some shit?
 
-            # doing duplicate work, as `validate_header` already deserializes full message
-            if manager.validate_header(message):
-                request = manager.get_request(message)
+            if self._validate_header(message):
+                request = self._parse_message(message)
                 print(request)
-                response = Response(content=request, status=200)
-                self.send(response.encode())
+                response = Response(data=request, status=200)
             else:
                 print('Cannot find header `Auth`')
-                self.send('BAD REQUEST')
+                response = Response(data='Auth missing', status=400)
+
+            self.send(self.response_serializer.serialize(response))
 
 
 class AsyncServerSession:
