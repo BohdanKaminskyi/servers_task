@@ -1,9 +1,12 @@
 import asyncio
 import socket
+import traceback
 
 from src.commands.commands_processor import CommandProcessor
-from src.response_handler import Response
 from src.commands.commands import CommandBroker
+from src.response_handler import Response
+from colorama import Fore, init
+init(autoreset=True)
 
 
 class ClientSession:
@@ -59,10 +62,13 @@ class ServerSession:
     def server_loop(self):
         """Handle client commands"""
         while True:
-            command = self.receive().lstrip().split()
-
-            response = CommandProcessor.process_command(command)
-            self.send(response)
+            try:
+                command = self.receive().lstrip().split()
+                response = CommandProcessor.process_command(command)
+                self.send(response)
+            except:
+                print(Fore.RED + traceback.format_exc())
+                self.send(Response(content='Error occured...', status=400))
 
 
 class AsyncServerSession:
