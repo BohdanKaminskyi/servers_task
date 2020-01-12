@@ -1,5 +1,5 @@
 from src.commands.commands import Commands, CommandNotFoundError
-from src.response_handler import Response
+from src.requests.response import Response
 
 
 class ClientDisconnectedError(Exception):
@@ -12,7 +12,7 @@ class CommandProcessor:
     @staticmethod
     def process_command(command) -> Response:
         if not command:
-            return Response(status=200, content='')
+            return Response(status=200, data='')
 
         command, args = command[0].lower(), command[1:]
 
@@ -23,12 +23,12 @@ class CommandProcessor:
             command_output = Commands.execute(command, *args)
             response = Response(
                 status=200,
-                content=command_output
+                data=command_output
             )
         except CommandNotFoundError:
             response = Response(
                 status=404,
-                content=f'{command}: command not found'
+                data=f'{command}: command not found'
             )
 
         return response

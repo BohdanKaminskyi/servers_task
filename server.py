@@ -1,7 +1,7 @@
 import argparse
 import asyncio
 
-from src.sessions import ServerSession, AsyncServerSession
+from src.sessions.sessions import ServerSession, AsyncServerSession
 from src.workers import SyncWorker, AsyncWorker, TaskManager
 from concurrent.futures import ProcessPoolExecutor
 from src.socket_config import ServerSocket
@@ -52,6 +52,7 @@ def run_server_sync():
 
 if __name__ == '__main__':
     args = parser.parse_args()
+
 
     if args.serve_async:
         print('Running async...')
